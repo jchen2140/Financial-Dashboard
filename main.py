@@ -10,22 +10,20 @@ from bokeh.layouts import row, column
 from bokeh.models import TextInput, Button, DatePicker, MultiChoice
 
 
-# --- Data loader ---
+# Data Loader
 def load_data(ticker1, ticker2, start, end):
     df1 = yf.download(ticker1, start=start, end=end)[["Open", "High", "Low", "Close"]].copy()
     df2 = yf.download(ticker2, start=start, end=end)[["Open", "High", "Low", "Close"]].copy()
-    # Make sure each column is Series of floats, not 1-col DataFrames
     for df in (df1, df2):
         for col in df.columns:
             df[col] = df[col].astype(float)
     return df1, df2
 
 
-# --- Plot builder ---
+# Plot builder
 def plot_data(data, indicators, sync_axis=None):
     df = data
 
-    # Ensure Series (squeeze handles single-col DataFrames)
     open_prices = df["Open"].squeeze()
     close_prices = df["Close"].squeeze()
     high_prices = df["High"].squeeze()
@@ -52,14 +50,14 @@ def plot_data(data, indicators, sync_axis=None):
     p.xaxis.major_label_orientation = math.pi / 4
     p.grid.grid_line_alpha = 0.25
 
-    # Candlestick chart
+    # candlestick chart
     p.segment(df.index, high_prices, df.index, low_prices, color="black")
     p.vbar(df.index[gain], width, open_prices[gain], close_prices[gain],
            fill_color="#00ff00", line_color="#00ff00")
     p.vbar(df.index[loss], width, open_prices[loss], close_prices[loss],
            fill_color="#ff0000", line_color="#ff0000")
 
-    # Indicators
+    # indicators
     for indicator in indicators:
         if indicator == "30 Day SMA":
             df["SMA30"] = close_prices.rolling(30).mean()
@@ -79,7 +77,7 @@ def plot_data(data, indicators, sync_axis=None):
     return p
 
 
-# --- Button callback ---
+# Button functions
 plot_area = column()  # empty container for plots
 
 def on_button_click():
@@ -93,8 +91,7 @@ def on_button_click():
     p2 = plot_data(df2, indicators, sync_axis=p1.x_range)
     plot_area.children = [row(p1, p2)]
 
-
-# --- Widgets ---
+# UI
 stock1_text = TextInput(title="Stock 1 (e.g. AAPL)")
 stock2_text = TextInput(title="Stock 2 (e.g. MSFT)")
 
@@ -119,7 +116,7 @@ load_button = Button(label="Load Data", button_type="success")
 load_button.on_click(on_button_click)
 
 
-# --- Layout ---
+# Layout
 layout = column(
     stock1_text,
     stock2_text,

@@ -1,0 +1,1 @@
+Visualize stock differences overtime
